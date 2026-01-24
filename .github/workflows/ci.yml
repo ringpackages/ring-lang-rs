@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout Ring
+        uses: actions/checkout@v4
+        with:
+          repository: ringpackages/ringsrc
+          path: ring
+
+      - name: Build Ring (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build
+          cd ring/language
+          mkdir -p build && cd build
+          cmake .. -GNinja
+          ninja
+          cmake --install .
+          echo "RING=${{ github.workspace }}/ring" >> $GITHUB_ENV
+
+      - name: Build Ring (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install cmake ninja
+          cd ring/language
+          mkdir -p build && cd build
+          cmake .. -GNinja
+          ninja
+          cmake --install .
+          echo "RING=${{ github.workspace }}/ring" >> $GITHUB_ENV
+
+      - name: Build Ring (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cd ring\language
+          mkdir build -Force
+          cd build
+          cmake .. -G "Visual Studio 17 2022" -A x64
+          cmake --build . --config Release
+          cmake --install .
+          echo "RING=${{ github.workspace }}\ring" >> $env:GITHUB_ENV
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Run tests
+        run: cargo test --verbose
+
+      - name: Build release
+        run: cargo build --release --verbose
+
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout Ring
+        uses: actions/checkout@v4
+        with:
+          repository: ringpackages/ringsrc
+          path: ring
+
+      - name: Build Ring
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build
+          cd ring/language
+          mkdir -p build && cd build
+          cmake .. -GNinja
+          ninja
+          cmake --install .
+          echo "RING=${{ github.workspace }}/ring" >> $GITHUB_ENV
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Clippy
+        run: cargo clippy -- -D warnings
+
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Check formatting
+        run: cargo fmt --check

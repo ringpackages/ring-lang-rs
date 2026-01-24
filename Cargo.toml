@@ -1,0 +1,26 @@
+[package]
+name = "ring-lang-rs"
+version = "0.1.1"
+edition = "2021"
+description = "Rust bindings for the Ring programming language"
+license = "MIT"
+repository = "https://github.com/ysdragon/ring-lang-rs"
+homepage = "https://ring-lang.github.io/"
+documentation = "https://docs.rs/ring-lang-rs"
+readme = "README.md"
+keywords = ["ring", "ffi", "bindings", "extension", "language"]
+categories = ["api-bindings", "development-tools::ffi"]
+rust-version = "1.70"
+
+[lib]
+name = "ring_lang_rs"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+libc = "0.2"
+
+[build-dependencies]
+cc = "1.2"
+
+[features]
+default = []
