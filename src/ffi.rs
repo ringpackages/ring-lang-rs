@@ -182,43 +182,53 @@ pub const ITEM_NUMBERFLAG_DOUBLE: c_uint = 2;
 
 #[inline]
 pub unsafe fn ring_list_getsize(pList: RingList) -> c_uint {
-    (*pList).nSize
+    unsafe { (*pList).nSize }
 }
 
 #[inline]
 pub unsafe fn ring_list_getint(pList: RingList, nIndex: c_uint) -> c_int {
-    let item = ring_list_getitem(pList, nIndex);
-    (*item).data.iNumber
+    unsafe {
+        let item = ring_list_getitem(pList, nIndex);
+        (*item).data.iNumber
+    }
 }
 
 #[inline]
 pub unsafe fn ring_list_getdouble(pList: RingList, nIndex: c_uint) -> c_double {
-    let item = ring_list_getitem(pList, nIndex);
-    (*item).data.dNumber
+    unsafe {
+        let item = ring_list_getitem(pList, nIndex);
+        (*item).data.dNumber
+    }
 }
 
 #[inline]
 pub unsafe fn ring_list_getpointer(pList: RingList, nIndex: c_uint) -> *mut c_void {
-    let item = ring_list_getitem(pList, nIndex);
-    (*item).data.pPointer
+    unsafe {
+        let item = ring_list_getitem(pList, nIndex);
+        (*item).data.pPointer
+    }
 }
 
 #[inline]
 pub unsafe fn ring_list_getstring(pList: RingList, nIndex: c_uint) -> *const c_char {
-    let item = ring_list_getitem(pList, nIndex);
-    let pString = (*item).data.pString;
-    (*pString).cStr
+    unsafe {
+        let item = ring_list_getitem(pList, nIndex);
+        let pString = (*item).data.pString;
+        (*pString).cStr
+    }
 }
 
 #[inline]
 pub unsafe fn ring_list_getstringsize(pList: RingList, nIndex: c_uint) -> c_uint {
-    let item = ring_list_getitem(pList, nIndex);
-    let pString = (*item).data.pString;
-    (*pString).nSize
+    unsafe {
+        let item = ring_list_getitem(pList, nIndex);
+        let pString = (*item).data.pString;
+        (*pString).nSize
+    }
 }
 
 #[link(name = "ring")]
-extern "C" {
+unsafe extern "C" {
     pub fn ring_vm_funcregister2(pRingState: RingState, cStr: *const c_char, pFunc: RingFunc);
 
     pub fn ring_vm_api_paracount(pPointer: *mut c_void) -> c_int;

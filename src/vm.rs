@@ -120,29 +120,35 @@ pub fn ring_vm_set_funcsp(vm: RingVM, funcsp: c_uint) {
 
 #[inline]
 pub unsafe fn ring_vm_stack_push_cvalue(vm: RingVM, s: &[u8]) {
-    let sp = (*vm).nSP as usize;
-    (*vm).nSP += 1;
-    let item = &mut (*vm).aStack[sp];
-    item.flags = ITEMTYPE_STRING;
-    ffi::ring_item_setstring2(item, s.as_ptr() as *const c_char, s.len() as c_uint);
+    unsafe {
+        let sp = (*vm).nSP as usize;
+        (*vm).nSP += 1;
+        let item = &mut (*vm).aStack[sp];
+        item.flags = ITEMTYPE_STRING;
+        ffi::ring_item_setstring2(item, s.as_ptr() as *const c_char, s.len() as c_uint);
+    }
 }
 
 #[inline]
 pub unsafe fn ring_vm_stack_push_number(vm: RingVM, num: f64) {
-    let sp = (*vm).nSP as usize;
-    (*vm).nSP += 1;
-    let item = &mut (*vm).aStack[sp];
-    item.flags = (ITEM_NUMBERFLAG_DOUBLE << 3) | ffi::ITEMTYPE_NUMBER;
-    item.data.dNumber = num;
+    unsafe {
+        let sp = (*vm).nSP as usize;
+        (*vm).nSP += 1;
+        let item = &mut (*vm).aStack[sp];
+        item.flags = (ITEM_NUMBERFLAG_DOUBLE << 3) | ffi::ITEMTYPE_NUMBER;
+        item.data.dNumber = num;
+    }
 }
 
 #[inline]
 pub unsafe fn ring_vm_stack_push_int(vm: RingVM, num: c_int) {
-    let sp = (*vm).nSP as usize;
-    (*vm).nSP += 1;
-    let item = &mut (*vm).aStack[sp];
-    item.flags = (ffi::ITEM_NUMBERFLAG_INT << 3) | ffi::ITEMTYPE_NUMBER;
-    item.data.iNumber = num;
+    unsafe {
+        let sp = (*vm).nSP as usize;
+        (*vm).nSP += 1;
+        let item = &mut (*vm).aStack[sp];
+        item.flags = (ffi::ITEM_NUMBERFLAG_INT << 3) | ffi::ITEMTYPE_NUMBER;
+        item.data.iNumber = num;
+    }
 }
 
 // VM execution and utilities

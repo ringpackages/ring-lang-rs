@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! ring_func {
     ($name:ident, $body:expr) => {
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub extern "C" fn $name(p: *mut ::std::ffi::c_void) {
             $body(p)
         }
@@ -11,7 +11,7 @@ macro_rules! ring_func {
 #[macro_export]
 macro_rules! ring_libinit {
     ($($name:expr => $func:ident),* $(,)?) => {
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub extern "C" fn ringlib_init(state: $crate::RingState) {
             $(
                 $crate::ring_register_function(state, $name, $func);
