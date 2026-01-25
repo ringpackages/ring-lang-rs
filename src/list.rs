@@ -82,13 +82,13 @@ pub fn ring_list_getstring(list: RingList, index: c_uint) -> *const c_char {
 }
 
 #[inline]
-pub fn ring_list_getstring_str(list: RingList, index: c_uint) -> &'static str {
+pub fn ring_list_getstring_str(list: RingList, index: c_uint) -> String {
     unsafe {
         let ptr = ffi::ring_list_getstring(list, index);
         if ptr.is_null() {
-            ""
+            String::new()
         } else {
-            CStr::from_ptr(ptr).to_str().unwrap_or("")
+            CStr::from_ptr(ptr).to_str().unwrap_or("").to_owned()
         }
     }
 }
