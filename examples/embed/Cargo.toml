@@ -1,0 +1,14 @@
+[package]
+name = "embed_ring"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ring-lang-rs = { path = "../.." }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
