@@ -12,15 +12,15 @@ Rust bindings for the [Ring programming language](https://ring-lang.github.io/).
 
 ```mermaid
 flowchart LR
-    subgraph ext["<b>Extensions</b> (Ring calls Rust)"]
+    subgraph ext["<b>Extensions</b>"]
         direction LR
         A["Ring Program<br/><code>.ring</code>"] -->|"loadlib()"| B["Rust Extension<br/><code>.dll/.so/.dylib</code>"]
         B -->|"return values"| A
     end
     
-    subgraph emb["<b>Embedding</b> (Rust calls Ring)"]
+    subgraph emb["<b>Embedding</b>"]
         direction LR
-        C["Rust Application<br/><code>binary</code>"] -->|"ring_state_new()<br/>ring_state_runfile()"| D["Ring VM<br/><code>embedded</code>"]
+        C["Rust Application<br/><code>binary</code>"] -->|"ring_state_*()"| D["Ring VM<br/><code>embedded</code>"]
         D -->|"results"| C
     end
 ```
