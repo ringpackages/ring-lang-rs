@@ -152,6 +152,16 @@ pub fn ring_state_runprogram(state: RingState) {
 }
 
 #[inline]
+pub fn ring_state_newbytecode(state: RingState, size: c_uint, literal: c_uint) {
+    unsafe { ffi::ring_state_newbytecode(state, size, literal) }
+}
+
+#[inline]
+pub fn ring_state_runbytecode(state: RingState) {
+    unsafe { ffi::ring_state_runbytecode(state) }
+}
+
+#[inline]
 pub fn ring_state_cgiheader(state: RingState) {
     unsafe { ffi::ring_state_cgiheader(state) }
 }

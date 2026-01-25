@@ -483,6 +483,8 @@ extern "C" {
         cFileName: *const c_char,
     );
     pub fn ring_state_runprogram(pRingState: RingState);
+    pub fn ring_state_newbytecode(pRingState: RingState, nSize: c_uint, lLiteral: c_uint);
+    pub fn ring_state_runbytecode(pRingState: RingState);
 
     // VM callback function
     pub fn ring_vm_callfunction(pVM: RingVM, cFuncName: *const c_char);
