@@ -1,3 +1,25 @@
+//! # ring-lang-rs
+//!
+//! Rust bindings for the Ring programming language.
+//!
+//! ## Thread Safety
+//!
+//! Ring has **no GIL** (Global Interpreter Lock). Threading works as follows:
+//! - **Separate states are independent**: Multiple `ring_state_new()` calls create isolated VMs
+//! - **Shared state across threads**: Use `ring_vm_runcodefromthread()` which creates a per-thread
+//!   VM that shares global scope with the main VM. Mutex protection is applied to globals,
+//!   function hash table, variable hash table, and memory pool during thread creation/deletion.
+//! - **Memory pool**: Thread-safe only after calling `ring_vm_mutexfunctions()` to register
+//!   mutex callbacks, and only when using the threading API (`ring_vm_runcodefromthread`)
+//!
+//! ## Memory Safety
+//!
+//! Most functions in this crate are thin wrappers around Ring's C API. Callers must ensure:
+//! - Pointers (`RingState`, `RingList`, `RingVM`) are valid and non-null
+//! - Objects are not used after being deleted
+//! - `ring_list_getstring_str()` returns an owned `String` (safe to store)
+//! - `ring_api_getstring_str()` returns a reference valid only during the callback
+
 #![allow(non_snake_case)]
 #![allow(non_camel_case_types)]
 #![allow(dead_code)]
