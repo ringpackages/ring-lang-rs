@@ -177,8 +177,8 @@ pub fn ring_state_unregisterblock(state: RingState, start: *mut c_void) {
 }
 
 #[inline]
-pub fn ring_state_willunregisterblock(state: RingState, start: *mut c_void) -> bool {
-    unsafe { ffi::ring_state_willunregisterblock(state, start) != 0 }
+pub fn ring_state_willunregisterblock(state: RingState, start: *mut c_void) {
+    unsafe { ffi::ring_state_willunregisterblock(state, start) }
 }
 
 #[inline]

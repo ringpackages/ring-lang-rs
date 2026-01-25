@@ -526,15 +526,15 @@ extern "C" {
     pub fn ring_vm_mutexfunctions(
         pVM: RingVM,
         pCreate: Option<extern "C" fn() -> *mut c_void>,
-        pDestroy: Option<extern "C" fn(*mut c_void)>,
         pLock: Option<extern "C" fn(*mut c_void)>,
         pUnlock: Option<extern "C" fn(*mut c_void)>,
+        pDestroy: Option<extern "C" fn(*mut c_void)>,
     );
 
     // State GC block registration
     pub fn ring_state_registerblock(pRingState: RingState, pStart: *mut c_void, pEnd: *mut c_void);
     pub fn ring_state_unregisterblock(pRingState: RingState, pStart: *mut c_void);
-    pub fn ring_state_willunregisterblock(pRingState: RingState, pStart: *mut c_void) -> c_int;
+    pub fn ring_state_willunregisterblock(pRingState: RingState, pStart: *mut c_void);
 
     // State utilities
     pub fn ring_state_cgiheader(pRingState: RingState);
