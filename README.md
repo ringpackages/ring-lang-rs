@@ -27,6 +27,32 @@ flowchart LR
 
 ---
 
+## Code Generation Tools
+
+Two approaches to generate Ring extensions from Rust code:
+
+| Approach | Location | Best For |
+|----------|----------|----------|
+| **Proc Macro** | [`macros/`](macros/README.md) | New projects, pure Rust workflow |
+| **Ring Script** | [`tools/codegen/`](tools/codegen/README.md) | Similar to C/C++ Ring codegen workflow |
+
+**Proc Macro** (`ring_extension!`) - Zero config, just `cargo build`:
+```rust
+ring_extension! {
+    prefix: "mylib";
+    pub fn add(a: i32, b: i32) -> i32 { a + b }
+}
+```
+
+**Ring Script** (`parsec.ring`) - Uses `.rf` config files:
+```bash
+ring parsec.ring mylib.rf src/lib.rs mylib_classes.ring
+```
+
+Both generate the same Ring-callable functions. See each README for details.
+
+---
+
 ## Using Extensions
 
 If you have a Rust extension (`.dll`/`.so`/`.dylib`), using it is simple:
