@@ -1,0 +1,213 @@
+# UUID Demo - uuid crate wrapper for Ring
+# Usage: ring ../../parsec.ring uuid.rf src/lib.rs
+
+<meta>
+lib_prefix: uuid
+</meta>
+
+<code>
+use uuid::{Uuid, Timestamp, NoContext};
+use hex;
+
+// ============================================
+// UUID Generation
+// ============================================
+
+/// Generate a random UUID v4
+pub fn v4() -> String {
+    Uuid::new_v4().to_string()
+}
+
+/// Generate a UUID v7 (time-ordered, random)
+pub fn v7() -> String {
+    Uuid::now_v7().to_string()
+}
+
+/// Generate a nil UUID (all zeros)
+pub fn nil() -> String {
+    Uuid::nil().to_string()
+}
+
+/// Generate a max UUID (all ones)
+pub fn max() -> String {
+    Uuid::max().to_string()
+}
+
+// ============================================
+// UUID Parsing & Validation
+// ============================================
+
+/// Parse a UUID string (returns canonical format or empty on error)
+pub fn parse(s: &str) -> String {
+    Uuid::parse_str(s)
+        .map(|u| u.to_string())
+        .unwrap_or_default()
+}
+
+/// Check if string is a valid UUID
+pub fn is_valid(s: &str) -> bool {
+    Uuid::parse_str(s).is_ok()
+}
+
+/// Get UUID version (0 for nil, 4 for random, 7 for time-ordered, etc.)
+pub fn get_version(s: &str) -> u32 {
+    Uuid::parse_str(s)
+        .map(|u| u.get_version_num() as u32)
+        .unwrap_or(0)
+}
+
+/// Get UUID variant
+pub fn get_variant(s: &str) -> String {
+    Uuid::parse_str(s)
+        .map(|u| format!("{:?}", u.get_variant()))
+        .unwrap_or_default()
+}
+
+// ============================================
+// UUID Formatting
+// ============================================
+
+/// Format UUID as lowercase hyphenated (canonical)
+pub fn to_string(s: &str) -> String {
+    Uuid::parse_str(s)
+        .map(|u| u.hyphenated().to_string())
+        .unwrap_or_default()
+}
+
+/// Format UUID as uppercase hyphenated
+pub fn to_upper(s: &str) -> String {
+    Uuid::parse_str(s)
+        .map(|u| u.hyphenated().to_string().to_uppercase())
+        .unwrap_or_default()
+}
+
+/// Format UUID without hyphens
+pub fn to_simple(s: &str) -> String {
+    Uuid::parse_str(s)
+        .map(|u| u.simple().to_string())
+        .unwrap_or_default()
+}
+
+/// Format UUID as URN (urn:uuid:...)
+pub fn to_urn(s: &str) -> String {
+    Uuid::parse_str(s)
+        .map(|u| u.urn().to_string())
+        .unwrap_or_default()
+}
+
+/// Format UUID as braced ({...})
+pub fn to_braced(s: &str) -> String {
+    Uuid::parse_str(s)
+        .map(|u| u.braced().to_string())
+        .unwrap_or_default()
+}
+
+// ============================================
+// UUID Comparison
+// ============================================
+
+/// Check if two UUIDs are equal
+pub fn equals(uuid1: &str, uuid2: &str) -> bool {
+    match (Uuid::parse_str(uuid1), Uuid::parse_str(uuid2)) {
+        (Ok(u1), Ok(u2)) => u1 == u2,
+        _ => false,
+    }
+}
+
+/// Check if UUID is nil (all zeros)
+pub fn is_nil(s: &str) -> bool {
+    Uuid::parse_str(s)
+        .map(|u| u.is_nil())
+        .unwrap_or(false)
+}
+
+/// Check if UUID is max (all ones)
+pub fn is_max(s: &str) -> bool {
+    Uuid::parse_str(s)
+        .map(|u| u.is_max())
+        .unwrap_or(false)
+}
+
+/// Compare two UUIDs (-1 if first < second, 0 if equal, 1 if first > second)
+pub fn compare(uuid1: &str, uuid2: &str) -> i32 {
+    match (Uuid::parse_str(uuid1), Uuid::parse_str(uuid2)) {
+        (Ok(u1), Ok(u2)) => {
+            if u1 < u2 { -1 }
+            else if u1 > u2 { 1 }
+            else { 0 }
+        },
+        _ => 0,
+    }
+}
+
+// ============================================
+// UUID Bytes
+// ============================================
+
+/// Get UUID as hex-encoded bytes (32 chars)
+pub fn to_hex(s: &str) -> String {
+    Uuid::parse_str(s)
+        .map(|u| hex::encode(u.as_bytes()))
+        .unwrap_or_default()
+}
+
+/// Create UUID from hex-encoded bytes
+pub fn from_hex(hex_str: &str) -> String {
+    hex::decode(hex_str)
+        .ok()
+        .and_then(|bytes: Vec<u8>| {
+            if bytes.len() == 16 {
+                let arr: [u8; 16] = bytes.try_into().ok()?;
+                Some(Uuid::from_bytes(arr).to_string())
+            } else {
+                None
+            }
+        })
+        .unwrap_or_default()
+}
+
+// ============================================
+// Batch Generation
+// ============================================
+
+/// Generate multiple v4 UUIDs (returns JSON array)
+pub fn batch_v4(count: u32) -> String {
+    let uuids: Vec<String> = (0..count).map(|_| Uuid::new_v4().to_string()).collect();
+    format!("[{}]", uuids.iter().map(|u| format!("\"{}\"", u)).collect::<Vec<_>>().join(","))
+}
+
+/// Generate multiple v7 UUIDs (returns JSON array)
+pub fn batch_v7(count: u32) -> String {
+    let uuids: Vec<String> = (0..count).map(|_| Uuid::now_v7().to_string()).collect();
+    format!("[{}]", uuids.iter().map(|u| format!("\"{}\"", u)).collect::<Vec<_>>().join(","))
+}
+
+// ============================================
+// UUID v7 Timestamp Extraction
+// ============================================
+
+/// Extract Unix timestamp (milliseconds) from v7 UUID
+pub fn v7_timestamp_ms(s: &str) -> i64 {
+    Uuid::parse_str(s)
+        .ok()
+        .and_then(|u| {
+            if u.get_version_num() == 7 {
+                u.get_timestamp().map(|ts| {
+                    let (secs, nanos) = ts.to_unix();
+                    (secs as i64) * 1000 + (nanos as i64 / 1_000_000)
+                })
+            } else {
+                None
+            }
+        })
+        .unwrap_or(0)
+}
+
+/// Create v7 UUID from Unix timestamp (milliseconds)
+pub fn v7_from_timestamp_ms(timestamp_ms: i64) -> String {
+    let secs = (timestamp_ms / 1000) as u64;
+    let nanos = ((timestamp_ms % 1000) * 1_000_000) as u32;
+    let ts = Timestamp::from_unix(NoContext, secs, nanos);
+    Uuid::new_v7(ts).to_string()
+}
+</code>

@@ -1,0 +1,384 @@
+# DateTime Demo - chrono wrapper for Ring
+# Usage: ring ../../parsec.ring datetime.rf src/lib.rs
+
+<meta>
+lib_prefix: dt
+</meta>
+
+<code>
+use chrono::{DateTime, Utc, Local, NaiveDateTime, NaiveDate, NaiveTime, Duration, Datelike, Timelike, Weekday};
+use chrono::format::ParseError;
+
+// ============================================
+// Current Time
+// ============================================
+
+/// Get current UTC timestamp (RFC 3339 format)
+pub fn now_utc() -> String {
+    Utc::now().to_rfc3339()
+}
+
+/// Get current local timestamp (RFC 3339 format)
+pub fn now_local() -> String {
+    Local::now().to_rfc3339()
+}
+
+/// Get current Unix timestamp (seconds since epoch)
+pub fn now_unix() -> i64 {
+    Utc::now().timestamp()
+}
+
+/// Get current Unix timestamp in milliseconds
+pub fn now_unix_ms() -> i64 {
+    Utc::now().timestamp_millis()
+}
+
+// ============================================
+// Parsing
+// ============================================
+
+/// Parse RFC 3339 datetime string (e.g., "2024-01-15T10:30:00Z")
+pub fn parse_rfc3339(s: &str) -> String {
+    DateTime::parse_from_rfc3339(s)
+        .map(|dt| dt.to_rfc3339())
+        .unwrap_or_else(|e| format!("error: {}", e))
+}
+
+/// Parse datetime with custom format
+/// Common formats: "%Y-%m-%d %H:%M:%S", "%d/%m/%Y", "%Y-%m-%d"
+pub fn parse_format(s: &str, format: &str) -> String {
+    NaiveDateTime::parse_from_str(s, format)
+        .map(|dt| dt.format("%Y-%m-%dT%H:%M:%S").to_string())
+        .unwrap_or_else(|e| format!("error: {}", e))
+}
+
+/// Parse date only (returns "YYYY-MM-DD")
+pub fn parse_date(s: &str, format: &str) -> String {
+    NaiveDate::parse_from_str(s, format)
+        .map(|d| d.format("%Y-%m-%d").to_string())
+        .unwrap_or_else(|e| format!("error: {}", e))
+}
+
+/// Parse Unix timestamp to RFC 3339
+pub fn from_unix(timestamp: i64) -> String {
+    DateTime::from_timestamp(timestamp, 0)
+        .map(|dt| dt.to_rfc3339())
+        .unwrap_or_else(|| "error: invalid timestamp".to_string())
+}
+
+/// Parse Unix timestamp in milliseconds to RFC 3339
+pub fn from_unix_ms(timestamp_ms: i64) -> String {
+    DateTime::from_timestamp_millis(timestamp_ms)
+        .map(|dt| dt.to_rfc3339())
+        .unwrap_or_else(|| "error: invalid timestamp".to_string())
+}
+
+// ============================================
+// Formatting
+// ============================================
+
+/// Format datetime with custom format string
+pub fn format_datetime(datetime: &str, format: &str) -> String {
+    parse_any_datetime(datetime)
+        .map(|dt| dt.format(format).to_string())
+        .unwrap_or_else(|| "error: invalid datetime".to_string())
+}
+
+/// Convert to RFC 3339 format
+pub fn to_rfc3339(datetime: &str) -> String {
+    parse_any_datetime(datetime)
+        .map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc).to_rfc3339())
+        .unwrap_or_else(|| "error: invalid datetime".to_string())
+}
+
+/// Convert to RFC 2822 format (email date format)
+pub fn to_rfc2822(datetime: &str) -> String {
+    parse_any_datetime(datetime)
+        .map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc).to_rfc2822())
+        .unwrap_or_else(|| "error: invalid datetime".to_string())
+}
+
+/// Convert to Unix timestamp
+pub fn to_unix(datetime: &str) -> i64 {
+    parse_any_datetime(datetime)
+        .map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc).timestamp())
+        .unwrap_or(0)
+}
+
+// ============================================
+// Components Extraction
+// ============================================
+
+/// Get year from datetime
+pub fn get_year(datetime: &str) -> i32 {
+    parse_any_datetime(datetime).map(|dt| dt.year()).unwrap_or(0)
+}
+
+/// Get month (1-12) from datetime
+pub fn get_month(datetime: &str) -> u32 {
+    parse_any_datetime(datetime).map(|dt| dt.month()).unwrap_or(0)
+}
+
+/// Get day of month (1-31) from datetime
+pub fn get_day(datetime: &str) -> u32 {
+    parse_any_datetime(datetime).map(|dt| dt.day()).unwrap_or(0)
+}
+
+/// Get hour (0-23) from datetime
+pub fn get_hour(datetime: &str) -> u32 {
+    parse_any_datetime(datetime).map(|dt| dt.hour()).unwrap_or(0)
+}
+
+/// Get minute (0-59) from datetime
+pub fn get_minute(datetime: &str) -> u32 {
+    parse_any_datetime(datetime).map(|dt| dt.minute()).unwrap_or(0)
+}
+
+/// Get second (0-59) from datetime
+pub fn get_second(datetime: &str) -> u32 {
+    parse_any_datetime(datetime).map(|dt| dt.second()).unwrap_or(0)
+}
+
+/// Get day of week (1=Monday, 7=Sunday)
+pub fn get_weekday(datetime: &str) -> u32 {
+    parse_any_datetime(datetime)
+        .map(|dt| dt.weekday().num_days_from_monday() + 1)
+        .unwrap_or(0)
+}
+
+/// Get day of week name
+pub fn get_weekday_name(datetime: &str) -> String {
+    parse_any_datetime(datetime)
+        .map(|dt| dt.format("%A").to_string())
+        .unwrap_or_default()
+}
+
+/// Get day of year (1-366)
+pub fn get_day_of_year(datetime: &str) -> u32 {
+    parse_any_datetime(datetime).map(|dt| dt.ordinal()).unwrap_or(0)
+}
+
+/// Get ISO week number (1-53)
+pub fn get_week_number(datetime: &str) -> u32 {
+    parse_any_datetime(datetime).map(|dt| dt.iso_week().week()).unwrap_or(0)
+}
+
+// ============================================
+// Date Arithmetic
+// ============================================
+
+/// Add days to datetime
+pub fn add_days(datetime: &str, days: i64) -> String {
+    parse_any_datetime(datetime)
+        .and_then(|dt| dt.checked_add_signed(Duration::days(days)))
+        .map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc).to_rfc3339())
+        .unwrap_or_else(|| "error: invalid operation".to_string())
+}
+
+/// Add hours to datetime
+pub fn add_hours(datetime: &str, hours: i64) -> String {
+    parse_any_datetime(datetime)
+        .and_then(|dt| dt.checked_add_signed(Duration::hours(hours)))
+        .map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc).to_rfc3339())
+        .unwrap_or_else(|| "error: invalid operation".to_string())
+}
+
+/// Add minutes to datetime
+pub fn add_minutes(datetime: &str, minutes: i64) -> String {
+    parse_any_datetime(datetime)
+        .and_then(|dt| dt.checked_add_signed(Duration::minutes(minutes)))
+        .map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc).to_rfc3339())
+        .unwrap_or_else(|| "error: invalid operation".to_string())
+}
+
+/// Add seconds to datetime
+pub fn add_seconds(datetime: &str, seconds: i64) -> String {
+    parse_any_datetime(datetime)
+        .and_then(|dt| dt.checked_add_signed(Duration::seconds(seconds)))
+        .map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc).to_rfc3339())
+        .unwrap_or_else(|| "error: invalid operation".to_string())
+}
+
+/// Add weeks to datetime
+pub fn add_weeks(datetime: &str, weeks: i64) -> String {
+    parse_any_datetime(datetime)
+        .and_then(|dt| dt.checked_add_signed(Duration::weeks(weeks)))
+        .map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc).to_rfc3339())
+        .unwrap_or_else(|| "error: invalid operation".to_string())
+}
+
+/// Add months to datetime (handles month boundaries)
+pub fn add_months(datetime: &str, months: i32) -> String {
+    parse_any_datetime(datetime)
+        .and_then(|dt| {
+            let date = dt.date();
+            let new_date = if months >= 0 {
+                date.checked_add_months(chrono::Months::new(months as u32))
+            } else {
+                date.checked_sub_months(chrono::Months::new((-months) as u32))
+            };
+            new_date.map(|d| d.and_time(dt.time()))
+        })
+        .map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc).to_rfc3339())
+        .unwrap_or_else(|| "error: invalid operation".to_string())
+}
+
+/// Add years to datetime
+pub fn add_years(datetime: &str, years: i32) -> String {
+    add_months(datetime, years * 12)
+}
+
+// ============================================
+// Date Comparison
+// ============================================
+
+/// Get difference between two datetimes in days
+pub fn diff_days(datetime1: &str, datetime2: &str) -> i64 {
+    match (parse_any_datetime(datetime1), parse_any_datetime(datetime2)) {
+        (Some(dt1), Some(dt2)) => (dt1 - dt2).num_days(),
+        _ => 0,
+    }
+}
+
+/// Get difference between two datetimes in hours
+pub fn diff_hours(datetime1: &str, datetime2: &str) -> i64 {
+    match (parse_any_datetime(datetime1), parse_any_datetime(datetime2)) {
+        (Some(dt1), Some(dt2)) => (dt1 - dt2).num_hours(),
+        _ => 0,
+    }
+}
+
+/// Get difference between two datetimes in minutes
+pub fn diff_minutes(datetime1: &str, datetime2: &str) -> i64 {
+    match (parse_any_datetime(datetime1), parse_any_datetime(datetime2)) {
+        (Some(dt1), Some(dt2)) => (dt1 - dt2).num_minutes(),
+        _ => 0,
+    }
+}
+
+/// Get difference between two datetimes in seconds
+pub fn diff_seconds(datetime1: &str, datetime2: &str) -> i64 {
+    match (parse_any_datetime(datetime1), parse_any_datetime(datetime2)) {
+        (Some(dt1), Some(dt2)) => (dt1 - dt2).num_seconds(),
+        _ => 0,
+    }
+}
+
+/// Check if datetime1 is before datetime2
+pub fn is_before(datetime1: &str, datetime2: &str) -> bool {
+    match (parse_any_datetime(datetime1), parse_any_datetime(datetime2)) {
+        (Some(dt1), Some(dt2)) => dt1 < dt2,
+        _ => false,
+    }
+}
+
+/// Check if datetime1 is after datetime2
+pub fn is_after(datetime1: &str, datetime2: &str) -> bool {
+    match (parse_any_datetime(datetime1), parse_any_datetime(datetime2)) {
+        (Some(dt1), Some(dt2)) => dt1 > dt2,
+        _ => false,
+    }
+}
+
+/// Check if two datetimes are the same day
+pub fn is_same_day(datetime1: &str, datetime2: &str) -> bool {
+    match (parse_any_datetime(datetime1), parse_any_datetime(datetime2)) {
+        (Some(dt1), Some(dt2)) => dt1.date() == dt2.date(),
+        _ => false,
+    }
+}
+
+// ============================================
+// Date Construction
+// ============================================
+
+/// Create datetime from components
+pub fn create(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32) -> String {
+    NaiveDate::from_ymd_opt(year, month, day)
+        .and_then(|d| d.and_hms_opt(hour, minute, second))
+        .map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc).to_rfc3339())
+        .unwrap_or_else(|| "error: invalid date components".to_string())
+}
+
+/// Create date only
+pub fn create_date(year: i32, month: u32, day: u32) -> String {
+    NaiveDate::from_ymd_opt(year, month, day)
+        .map(|d| d.format("%Y-%m-%d").to_string())
+        .unwrap_or_else(|| "error: invalid date components".to_string())
+}
+
+/// Get start of day (00:00:00)
+pub fn start_of_day(datetime: &str) -> String {
+    parse_any_datetime(datetime)
+        .map(|dt| dt.date().and_hms_opt(0, 0, 0).unwrap())
+        .map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc).to_rfc3339())
+        .unwrap_or_else(|| "error: invalid datetime".to_string())
+}
+
+/// Get end of day (23:59:59)
+pub fn end_of_day(datetime: &str) -> String {
+    parse_any_datetime(datetime)
+        .map(|dt| dt.date().and_hms_opt(23, 59, 59).unwrap())
+        .map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc).to_rfc3339())
+        .unwrap_or_else(|| "error: invalid datetime".to_string())
+}
+
+// ============================================
+// Validation
+// ============================================
+
+/// Check if string is valid datetime
+pub fn is_valid(datetime: &str) -> bool {
+    parse_any_datetime(datetime).is_some()
+}
+
+/// Check if year is leap year
+pub fn is_leap_year(year: i32) -> bool {
+    NaiveDate::from_ymd_opt(year, 2, 29).is_some()
+}
+
+/// Get days in month
+pub fn days_in_month(year: i32, month: u32) -> u32 {
+    if month == 12 {
+        NaiveDate::from_ymd_opt(year + 1, 1, 1)
+    } else {
+        NaiveDate::from_ymd_opt(year, month + 1, 1)
+    }
+    .and_then(|d| d.pred_opt())
+    .map(|d| d.day())
+    .unwrap_or(0)
+}
+
+// ============================================
+// Helper Functions (not exposed)
+// ============================================
+
+fn parse_any_datetime(s: &str) -> Option<NaiveDateTime> {
+    // Try RFC 3339 first
+    if let Ok(dt) = DateTime::parse_from_rfc3339(s) {
+        return Some(dt.naive_utc());
+    }
+    
+    // Try common formats
+    let formats = [
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%d",
+        "%d/%m/%Y %H:%M:%S",
+        "%d/%m/%Y",
+        "%m/%d/%Y %H:%M:%S",
+        "%m/%d/%Y",
+    ];
+    
+    for format in formats {
+        if let Ok(dt) = NaiveDateTime::parse_from_str(s, format) {
+            return Some(dt);
+        }
+        if let Ok(d) = NaiveDate::parse_from_str(s, format) {
+            return Some(d.and_hms_opt(0, 0, 0).unwrap());
+        }
+    }
+    
+    None
+}
+</code>
