@@ -1,0 +1,28 @@
+[package]
+name = "ring-lang-codegen"
+version = "0.1.0"
+edition = "2024"
+description = "Proc macros to generate Ring programming language extensions in Rust - zero configuration"
+license = "MIT"
+repository = "https://github.com/ysdragon/ring-lang-rs"
+homepage = "https://ring-lang.github.io/"
+documentation = "https://docs.rs/ring-lang-codegen"
+readme = "README.md"
+keywords = ["ring", "ffi", "codegen", "proc-macro", "extension"]
+categories = ["development-tools::procedural-macro-helpers", "development-tools::ffi"]
+rust-version = "1.85"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "2", features = ["full", "parsing", "extra-traits"] }
+quote = "1"
+proc-macro2 = "1"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

@@ -1,0 +1,19 @@
+[package]
+name = "ring_uuid"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ring-lang-codegen = "0.1"
+ring-lang-rs = "0.1"
+uuid = { version = "1.20.0", features = ["v4", "v7"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

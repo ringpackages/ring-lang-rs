@@ -1,0 +1,19 @@
+[package]
+name = "ring_regex"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+regex = "1.12.2"
+ring-lang-codegen = "0.1"
+ring-lang-rs = "0.1"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
