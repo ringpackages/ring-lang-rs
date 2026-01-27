@@ -321,20 +321,20 @@ ring_func!(ring_create_managed, |p| {
 
 ### API Coverage
 
-**192 / 456 functions (42%)** of Ring's public C API.
+**188 / 386 functions (48%)** of Ring's public C API.
 
 | Header | Coverage |
 |--------|----------|
 | `vm.h` | 29/29 (100%) |
-| `state.h` | 19/20 (95%) |
+| `ringapi.h` | 41/41 (100%) |
+| `state.h` | 16/20 (80%) |
 | `rstring.h` | 11/22 (50%) |
 | `ritem.h` | 17/34 (50%) |
 | `general.h` | 12/28 (43%) |
 | `rlist.h` | 54/131 (41%) |
-| `ringapi.h` | 39/111 (35%) |
-| `vmgc.h` | 4/81 (5%) |
+| `vmgc.h` | 7/81 (9%) |
 
-We focused on functions useful for writing extensions. `ringapi.h` has many type-check macros (bound separately). `rlist.h` and `vmgc.h` have `_gc` variants we skip.
+We focused on functions useful for writing extensions. `rlist.h` and `vmgc.h` have `_gc` variants we skip.
 
 ---
 
