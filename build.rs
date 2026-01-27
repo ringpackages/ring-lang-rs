@@ -60,8 +60,8 @@ fn compile_ring_from_source(target_os: &str, is_wasm: bool) {
         .filter_map(|e| e.ok())
         .map(|e| e.path())
         .filter(|p| {
-            p.extension().map_or(false, |ext| ext == "c")
-                && p.file_name().map_or(false, |name| {
+            p.extension().is_some_and(|ext| ext == "c")
+                && p.file_name().is_some_and(|name| {
                     let name_str = name.to_string_lossy();
                     !excluded_files.contains(&name_str.as_ref())
                 })
@@ -114,10 +114,11 @@ fn compile_ring_from_source(target_os: &str, is_wasm: bool) {
         println!("cargo:rerun-if-changed={}", source.display());
     }
 
-    for entry in std::fs::read_dir(&include_dir).expect("Failed to read include dir") {
-        if let Ok(entry) = entry {
-            println!("cargo:rerun-if-changed={}", entry.path().display());
-        }
+    for entry in std::fs::read_dir(&include_dir)
+        .expect("Failed to read include dir")
+        .flatten()
+    {
+        println!("cargo:rerun-if-changed={}", entry.path().display());
     }
 }
 
