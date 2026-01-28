@@ -13,12 +13,12 @@ fn main() {
     println!("cargo:rerun-if-env-changed=RING");
     println!("cargo:rerun-if-env-changed=ring");
 
-    if use_static || is_android || is_wasm {
-        compile_ring_from_source(&target_os, is_wasm);
+    if no_link {
         return;
     }
 
-    if no_link {
+    if use_static || is_android || is_wasm {
+        compile_ring_from_source(&target_os, is_wasm);
         return;
     }
 
