@@ -238,8 +238,7 @@ pub fn ring_extension(input: TokenStream) -> TokenStream {
     let libinit_entries: Vec<_> = registrations
         .iter()
         .map(|(name, fn_ident)| {
-            let name_bytes = format!("{}\0", name);
-            quote! { #name_bytes.as_bytes() => #fn_ident }
+            quote! { #name => #fn_ident }
         })
         .collect();
 
