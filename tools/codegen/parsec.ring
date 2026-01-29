@@ -731,7 +731,7 @@ Func GenerateFunctionWrapper aFunc
         nInnerCategory = GetRustTypeCategory(cInnerType)
         cCode += C_TABS_2 + "Some(__result) => "
         cCode += GenerateReturnStatementEx(nInnerCategory, cInnerType, "__result", true)
-        cCode += C_TABS_2 + "None => ring_ret_string!(p, " + '"" ' + ")," + nl
+        cCode += C_TABS_2 + "None => {}," + nl
         cCode += C_TABS_1 + "}" + nl
     other
         cCode += ";" + nl
@@ -1026,7 +1026,7 @@ Func GenerateStructWrappers aStruct, aImplMethods
                     ok
                 off
                 cCode += C_TABS_3 + "}" + nl
-                cCode += C_TABS_3 + 'None => ring_ret_string!(p, ""),' + nl
+                cCode += C_TABS_3 + "None => {}," + nl
                 cCode += C_TABS_2 + "}" + nl
             on C_TYPE_STRUCT
                 # Struct field - return clone as pointer
