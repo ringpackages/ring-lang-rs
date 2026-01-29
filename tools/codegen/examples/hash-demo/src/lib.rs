@@ -253,16 +253,16 @@ ring_func!(ring_hash_hasher_get_algorithm, |p| {
 // Library Registration
 // ============================================
 ring_libinit! {
-    b"hash_base64_encode\0" => ring_hash_base64_encode,
-    b"hash_base64_decode\0" => ring_hash_base64_decode,
-    b"hash_hex_encode\0" => ring_hash_hex_encode,
-    b"hash_hex_decode\0" => ring_hash_hex_decode,
-    b"hash_md5_hash\0" => ring_hash_md5_hash,
-    b"hash_sha256_hash\0" => ring_hash_sha256_hash,
-    b"hash_sha512_hash\0" => ring_hash_sha512_hash,
-    b"hash_hasher_new\0" => ring_hash_hasher_new,
-    b"hash_hasher_delete\0" => ring_hash_hasher_delete,
-    b"hash_hasher_hash\0" => ring_hash_hasher_hash,
-    b"hash_hasher_set_algorithm\0" => ring_hash_hasher_set_algorithm,
-    b"hash_hasher_get_algorithm\0" => ring_hash_hasher_get_algorithm
+    "hash_base64_encode" => ring_hash_base64_encode,
+    "hash_base64_decode" => ring_hash_base64_decode,
+    "hash_hex_encode" => ring_hash_hex_encode,
+    "hash_hex_decode" => ring_hash_hex_decode,
+    "hash_md5_hash" => ring_hash_md5_hash,
+    "hash_sha256_hash" => ring_hash_sha256_hash,
+    "hash_sha512_hash" => ring_hash_sha512_hash,
+    "hash_hasher_new" => ring_hash_hasher_new,
+    "hash_hasher_delete" => ring_hash_hasher_delete,
+    "hash_hasher_hash" => ring_hash_hasher_hash,
+    "hash_hasher_set_algorithm" => ring_hash_hasher_set_algorithm,
+    "hash_hasher_get_algorithm" => ring_hash_hasher_get_algorithm
 }
