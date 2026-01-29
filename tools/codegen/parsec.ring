@@ -831,7 +831,7 @@ Func GenerateReturnStatementEx nCategory, cType, cVarName, lInMatchArm
         on C_TYPE_BOOL
             cCode += C_TABS_2 + "ring_list_addint(__list, if __item { 1 } else { 0 });" + nl
         on C_TYPE_STRING
-            cCode += C_TABS_2 + "ring_list_addstring(__list, format!(" + '"' + "{}\0" + '"' + ", __item).as_bytes());" + nl
+            cCode += C_TABS_2 + "ring_list_addstring_str(__list, &format!(" + '"' + "{}" + '"' + ", __item));" + nl
         other
             # Complex inner type (likely a struct) - add as pointer
             if IsStructType(cInnerType)
@@ -841,7 +841,7 @@ Func GenerateReturnStatementEx nCategory, cType, cVarName, lInMatchArm
             else
                 # Fallback for unknown types - use debug format
                 cCode += C_TABS_2 + "// Unknown inner type: " + cInnerType + nl
-                cCode += C_TABS_2 + "ring_list_addstring(__list, format!(" + '"' + "{:?}\0" + '"' + ", __item).as_bytes());" + nl
+                cCode += C_TABS_2 + "ring_list_addstring_str(__list, &format!(" + '"' + "{:?}" + '"' + ", __item));" + nl
             ok
         off
         cCode += C_TABS_1 + "}" + nl
@@ -992,14 +992,14 @@ Func GenerateStructWrappers aStruct, aImplMethods
                 on C_TYPE_BOOL
                     cCode += C_TABS_3 + "ring_list_addint(__list, if *__item { 1 } else { 0 });" + nl
                 on C_TYPE_STRING
-                    cCode += C_TABS_3 + "ring_list_addstring(__list, format!(" + '"' + "{}\0" + '"' + ", __item).as_bytes());" + nl
+                    cCode += C_TABS_3 + "ring_list_addstring_str(__list, &format!(" + '"' + "{}" + '"' + ", __item));" + nl
                 other
                     if IsStructType(cInnerType)
                         cInnerTypeConst = upper(cInnerType) + "_TYPE"
                         cCode += C_TABS_3 + "let __ptr = Box::into_raw(Box::new(__item.clone()));" + nl
                         cCode += C_TABS_3 + "ring_list_addcpointer(__list, __ptr as *mut std::ffi::c_void, " + cInnerTypeConst + ");" + nl
                     else
-                        cCode += C_TABS_3 + "ring_list_addstring(__list, format!(" + '"' + "{:?}\0" + '"' + ", __item).as_bytes());" + nl
+                        cCode += C_TABS_3 + "ring_list_addstring_str(__list, &format!(" + '"' + "{:?}" + '"' + ", __item));" + nl
                     ok
                 off
                 cCode += C_TABS_2 + "}" + nl
