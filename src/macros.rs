@@ -18,13 +18,17 @@ macro_rules! ring_libinit {
         { $crate::ring_libinit!(@cfg $state [ $($rest)* ] { $($body)* }); }
     };
     (@munch $state:ident) => {};
+    (@munch $state:ident $($name:literal => $func:ident),+ , $(#[$attr:meta])+ { $($bname:literal => $bfunc:ident),* $(,)? } $(, $($rest:tt)*)?) => {
+        $( $crate::ring_register_function_str($state, concat!($name, "\0"), $func); )*
+        $crate::ring_libinit!(@cfg $state [ $(#[$attr])* ] { $($bname => $bfunc),* });
+        $( $crate::ring_libinit!(@munch $state $($rest)*); )?
+    };
     (@munch $state:ident $(#[$attr:meta])+ { $($name:literal => $func:ident),* $(,)? } $(, $($rest:tt)*)?) => {
         $crate::ring_libinit!(@cfg $state [ $(#[$attr])* ] { $($name => $func),* });
         $( $crate::ring_libinit!(@munch $state $($rest)*); )?
     };
-    (@munch $state:ident $name:literal => $func:ident $(, $($rest:tt)*)?) => {
-        $crate::ring_register_function_str($state, concat!($name, "\0"), $func);
-        $( $crate::ring_libinit!(@munch $state $($rest)*); )?
+    (@munch $state:ident $($name:literal => $func:ident),+ $(,)?) => {
+        $( $crate::ring_register_function_str($state, concat!($name, "\0"), $func); )*
     };
     ($($name:literal => $func:ident),* $(,)?) => {
         #[unsafe(no_mangle)]
