@@ -173,7 +173,7 @@ fn link_ring_dynamically(target_os: &str) {
         println!("cargo:rustc-link-search=native={}", lib_path.display());
 
         // Use runtime target_os, not compile-time cfg!
-        if target_os == "macos" {
+        if target_os != "windows" {
             println!("cargo:rustc-link-arg=-Wl,-rpath,{}", lib_path.display());
         }
     }
