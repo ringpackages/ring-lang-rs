@@ -62,6 +62,14 @@ pub struct FuncCall {
 }
 
 #[repr(C)]
+pub struct ObjState {
+    pub pScope: RingList,
+    pub pMethods: RingList,
+    pub pClass: RingList,
+    pub bitfields: c_uint,
+}
+
+#[repr(C)]
 pub struct VM {
     pub pRingState: *mut c_void,
     pub pCode: RingList,
@@ -75,14 +83,12 @@ pub struct VM {
     pub pLoopMark: RingList,
     pub pTry: RingList,
     pub pScopeNewObj: RingList,
-    pub pObjState: RingList,
     pub pBraceObject: RingList,
     pub pBraceObjects: RingList,
     pub pActiveMem: RingList,
     pub pActivePackage: RingList,
     pub pSetProperty: RingList,
     pub pForStep: RingList,
-    pub pBeforeObjState: RingList,
     pub pCLibraries: RingList,
     pub pTraceData: RingList,
     pub pGlobalScopes: RingList,
@@ -91,6 +97,10 @@ pub struct VM {
     pub pDefinedGlobals: RingList,
     pub pTrackedVariables: RingList,
     pub pLiterals: RingList,
+    pub pThis: RingList,
+    pub pGetTempVar: RingList,
+    pub pSetTempVar: RingList,
+    pub pErrorMsg: RingList,
     pub pPackageName: RingString,
     pub pTrace: RingString,
     pub pByteCode: *mut ByteCode,
@@ -126,12 +136,16 @@ pub struct VM {
     pub nPC: c_uint,
     pub nPausePC: c_uint,
     pub nArgCacheCount: c_uint,
+    pub nCurrentObjState: c_uint,
+    pub nBeforeObjStateCount: c_uint,
     pub bitfields: [c_uint; 4],
     pub aStack: [Item; RING_VM_STACK_SIZE],
     pub aFuncCall: [FuncCall; RING_VM_STACK_SIZE],
     pub aScopes: [List; RING_VM_STACK_SIZE],
     pub aArgCache: [*mut List; RING_VM_STACK_SIZE],
     pub aCustomMutex: [*mut c_void; RING_VM_CUSTOMMUTEX_COUNT],
+    pub aObjState: [ObjState; RING_VM_STACK_SIZE],
+    pub aBeforeObjState: [ObjState; RING_VM_STACK_SIZE],
 }
 
 #[repr(C)]
