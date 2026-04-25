@@ -33,7 +33,7 @@ jobs:
           sudo apt-get install -y build-essential cmake ninja-build
           cd ring/language
           mkdir -p build && cd build
-          cmake .. -GNinja
+          cmake .. -GNinja -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/ring
           ninja
           cmake --install .
           echo "RING=${{ github.workspace }}/ring" >> $GITHUB_ENV
@@ -44,7 +44,7 @@ jobs:
           brew install cmake ninja
           cd ring/language
           mkdir -p build && cd build
-          cmake .. -GNinja
+          cmake .. -GNinja -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/ring
           ninja
           cmake --install .
           echo "RING=${{ github.workspace }}/ring" >> $GITHUB_ENV
@@ -56,7 +56,7 @@ jobs:
           cd ring\language
           mkdir build -Force
           cd build
-          cmake .. -G "Visual Studio 17 2022" -A x64
+          cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\ring
           cmake --build . --config Release
           cmake --install .
           echo "RING=${{ github.workspace }}\ring" >> $env:GITHUB_ENV
@@ -66,12 +66,23 @@ jobs:
 
       - name: Build
         run: cargo build --verbose
+        env:
+          RING: ${{ env.RING }}
+
+      - name: Add Ring lib to PATH (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: echo "$env:RING\lib" >> $env:GITHUB_PATH
 
       - name: Run tests
         run: cargo test --verbose -- --test-threads=1
+        env:
+          RING: ${{ env.RING }}
 
       - name: Build release
         run: cargo build --release --verbose
+        env:
+          RING: ${{ env.RING }}
 
   clippy:
     runs-on: ubuntu-latest
