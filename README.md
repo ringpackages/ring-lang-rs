@@ -97,7 +97,7 @@ The rest of this document covers how to **create Ring extensions in Rust** or **
 |----------|--------|---------|---------------|
 | Linux | ✅ | ✅ | x86_64, ARM64, ARMv7, RISC-V |
 | macOS | ✅ | ✅ | x86_64, ARM64 (Apple Silicon) |
-| Windows | ✅ | ✅ | x86_64, x86 (MSVC & GNU) |
+| Windows | ✅ | ✅ | x86_64, x86, ARM64 (MSVC & GNU) |
 | FreeBSD | ✅ | ✅ | x86_64, ARM64 |
 | Android | ✅ | - | ARM64, ARMv7, x86_64, x86 |
 | iOS | ✅ | - | ARM64, x86_64 (Intel simulator) |
