@@ -1,4 +1,4 @@
-use crate::ffi_types::{c_char, c_double, c_int, c_uint, c_void, size_t};
+use crate::ffi_types::{c_char, c_double, c_int, c_uchar, c_uint, c_void, size_t};
 
 use crate::{RingFunc, RingState};
 
@@ -160,12 +160,15 @@ pub struct String {
 pub struct List {
     pub pFirst: *mut c_void,
     pub pLast: *mut c_void,
-    pub nSize: c_uint,
-    pub nNextItem: c_uint,
     pub pLastItem: *mut c_void,
     pub pItemsArray: *mut *mut Item,
     pub pHashTable: *mut c_void,
     pub pBlocks: *mut c_void,
+    pub pHashParent: *mut List,
+    pub nNextItem: c_uint,
+    pub nSize: c_uint,
+    pub nIsHashMap: c_uchar,
+    pub nHashSubList: c_uchar,
     pub vGC: [u8; 24],
 }
 

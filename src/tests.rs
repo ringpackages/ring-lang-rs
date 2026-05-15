@@ -21,8 +21,8 @@ unsafe fn vm_from_state(state: crate::RingState) -> crate::RingVM {
 
 #[test]
 fn test_struct_sizes() {
-    assert_eq!(size_of::<VM>(), 281624, "VM struct size mismatch");
-    assert_eq!(size_of::<List>(), 80, "List struct size mismatch");
+    assert_eq!(size_of::<VM>(), 297688, "VM struct size mismatch");
+    assert_eq!(size_of::<List>(), 96, "List struct size mismatch");
     assert_eq!(size_of::<Item>(), 24, "Item struct size mismatch");
     assert_eq!(
         size_of::<RingStringStruct>(),
