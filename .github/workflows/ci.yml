@@ -23,8 +23,9 @@ jobs:
       - name: Checkout Ring
         uses: actions/checkout@v4
         with:
-          repository: ringpackages/ringsrc
+          repository: ring-lang/ring
           path: ring
+          fetch-depth: 1
 
       - name: Build Ring (Linux)
         if: runner.os == 'Linux'
@@ -92,8 +93,9 @@ jobs:
       - name: Checkout Ring
         uses: actions/checkout@v4
         with:
-          repository: ringpackages/ringsrc
+          repository: ring-lang/ring
           path: ring
+          fetch-depth: 1
 
       - name: Build Ring
         run: |
