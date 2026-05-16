@@ -68,8 +68,8 @@ pub const RING_OUTPUT_RETLIST: ffi_types::c_int = 0;
 pub const RING_OUTPUT_RETLISTBYREF: ffi_types::c_int = 1;
 pub const RING_OUTPUT_RETNEWREF: ffi_types::c_int = 2;
 
-pub const RING_VARVALUE_INT: ffi_types::c_int = 1;
-pub const RING_VARVALUE_FLOAT: ffi_types::c_int = 2;
+pub const RING_VARVALUE_INT: ffi_types::c_int = 3;
+pub const RING_VARVALUE_FLOAT: ffi_types::c_int = 7;
 
 pub const RING_VAR_NAME: ffi_types::c_uint = 1;
 pub const RING_VAR_TYPE: ffi_types::c_uint = 2;

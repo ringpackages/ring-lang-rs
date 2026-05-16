@@ -63,14 +63,14 @@ pub fn ring_state_newvar_str(state: RingState, name: &str) -> RingList {
 
 #[inline]
 pub fn ring_state_runfile(state: RingState, filename: &[u8]) -> c_int {
-    unsafe { ffi::ring_state_runfile(state, filename.as_ptr() as *const c_char) }
+    unsafe { ffi::ring_state_runfile(state, filename.as_ptr() as *mut c_char) }
 }
 
 #[inline]
 /// String variant of [`ring_state_runfile`].
 pub fn ring_state_runfile_str(state: RingState, filename: &str) -> c_int {
     if let Ok(cstr) = CString::new(filename) {
-        unsafe { ffi::ring_state_runfile(state, cstr.as_ptr()) }
+        unsafe { ffi::ring_state_runfile(state, cstr.as_ptr() as *mut c_char) }
     } else {
         0
     }
@@ -78,14 +78,14 @@ pub fn ring_state_runfile_str(state: RingState, filename: &str) -> c_int {
 
 #[inline]
 pub fn ring_state_runstring(state: RingState, code: &[u8]) -> c_int {
-    unsafe { ffi::ring_state_runstring(state, code.as_ptr() as *const c_char) }
+    unsafe { ffi::ring_state_runstring(state, code.as_ptr() as *mut c_char) }
 }
 
 #[inline]
 /// String variant of [`ring_state_runstring`].
 pub fn ring_state_runstring_str(state: RingState, code: &str) -> c_int {
     if let Ok(cstr) = CString::new(code) {
-        unsafe { ffi::ring_state_runstring(state, cstr.as_ptr()) }
+        unsafe { ffi::ring_state_runstring(state, cstr.as_ptr() as *mut c_char) }
     } else {
         0
     }

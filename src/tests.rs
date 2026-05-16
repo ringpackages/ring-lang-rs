@@ -1,11 +1,11 @@
 use std::ffi::CStr;
-use std::mem::size_of;
+use std::mem::{offset_of, size_of};
 
 use crate::ffi::{
     ByteCode, CFunction, FuncCall, ITEM_NUMBERFLAG_DOUBLE, ITEM_NUMBERFLAG_INT,
     ITEM_NUMBERFLAG_NOTHING, ITEMTYPE_FUNCPOINTER, ITEMTYPE_LIST, ITEMTYPE_NOTHING,
-    ITEMTYPE_NUMBER, ITEMTYPE_POINTER, ITEMTYPE_STRING, Item, ItemData, List, Register,
-    String as RingStringStruct, VM,
+    ITEMTYPE_NUMBER, ITEMTYPE_POINTER, ITEMTYPE_STRING, Item, ItemData, List, ListGCData, ObjState,
+    Register, String as RingStringStruct, VM,
 };
 
 // Helper to get VM pointer from initialized state.
@@ -21,7 +21,7 @@ unsafe fn vm_from_state(state: crate::RingState) -> crate::RingVM {
 
 #[test]
 fn test_struct_sizes() {
-    assert_eq!(size_of::<VM>(), 297688, "VM struct size mismatch");
+    assert_eq!(size_of::<VM>(), 297696, "VM struct size mismatch");
     assert_eq!(size_of::<List>(), 96, "List struct size mismatch");
     assert_eq!(size_of::<Item>(), 24, "Item struct size mismatch");
     assert_eq!(
@@ -35,8 +35,101 @@ fn test_struct_sizes() {
 }
 
 #[test]
+fn test_struct_sizes_extra() {
+    assert_eq!(
+        size_of::<ListGCData>(),
+        24,
+        "ListGCData struct size mismatch"
+    );
+    assert_eq!(size_of::<ObjState>(), 32, "ObjState struct size mismatch");
+}
+
+#[test]
 fn test_register_union_size() {
     assert_eq!(size_of::<Register>(), 8, "Register union size mismatch");
+}
+
+#[test]
+fn test_list_offsets() {
+    assert_eq!(offset_of!(List, pFirst), 0);
+    assert_eq!(offset_of!(List, pLast), 8);
+    assert_eq!(offset_of!(List, pLastItem), 16);
+    assert_eq!(offset_of!(List, pItemsArray), 24);
+    assert_eq!(offset_of!(List, pHashTable), 32);
+    assert_eq!(offset_of!(List, pBlocks), 40);
+    assert_eq!(offset_of!(List, pHashParent), 48);
+    assert_eq!(offset_of!(List, nNextItem), 56);
+    assert_eq!(offset_of!(List, nSize), 60);
+    assert_eq!(offset_of!(List, nIsHashMap), 64);
+    assert_eq!(offset_of!(List, nHashSubList), 65);
+    assert_eq!(offset_of!(List, vGC), 72);
+}
+
+#[test]
+fn test_listgcdata_offsets() {
+    assert_eq!(offset_of!(ListGCData, pContainer), 0);
+}
+
+#[test]
+fn test_item_offsets() {
+    assert_eq!(offset_of!(Item, data), 0);
+    assert_eq!(offset_of!(Item, flags), 8);
+    assert_eq!(offset_of!(Item, pGCFreeFunc), 16);
+}
+
+#[test]
+fn test_vm_offsets() {
+    assert_eq!(offset_of!(VM, pRingState), 0);
+    assert_eq!(offset_of!(VM, pCode), 8);
+    assert_eq!(offset_of!(VM, aStack), 464);
+    assert_eq!(offset_of!(VM, aFuncCall), 24560);
+    assert_eq!(offset_of!(VM, aScopes), 128976);
+    assert_eq!(offset_of!(VM, aArgCache), 225360);
+    assert_eq!(offset_of!(VM, aCustomMutex), 233392);
+    assert_eq!(offset_of!(VM, aObjState), 233440);
+    assert_eq!(offset_of!(VM, aBeforeObjState), 265568);
+}
+
+#[test]
+fn test_funccall_offsets() {
+    assert_eq!(offset_of!(FuncCall, cName), 0);
+    assert_eq!(offset_of!(FuncCall, cFileName), 8);
+    assert_eq!(offset_of!(FuncCall, cNewFileName), 16);
+    assert_eq!(offset_of!(FuncCall, pTempMem), 24);
+    assert_eq!(offset_of!(FuncCall, pFunc), 32);
+    assert_eq!(offset_of!(FuncCall, pVMState), 40);
+    assert_eq!(offset_of!(FuncCall, nPC), 48);
+    assert_eq!(offset_of!(FuncCall, nSP), 52);
+    assert_eq!(offset_of!(FuncCall, nLineNumber), 56);
+    assert_eq!(offset_of!(FuncCall, nCallerPC), 60);
+    assert_eq!(offset_of!(FuncCall, nListStart), 64);
+    assert_eq!(offset_of!(FuncCall, nForStep), 68);
+    assert_eq!(offset_of!(FuncCall, nExitMark), 72);
+    assert_eq!(offset_of!(FuncCall, nLoopMark), 76);
+    assert_eq!(offset_of!(FuncCall, nCurrentGlobalScope), 80);
+    assert_eq!(offset_of!(FuncCall, nActiveScopeID), 84);
+    assert_eq!(offset_of!(FuncCall, nNestedLists), 88);
+    assert_eq!(offset_of!(FuncCall, nParaCount), 92);
+}
+
+#[test]
+fn test_objstate_offsets() {
+    assert_eq!(offset_of!(ObjState, pScope), 0);
+    assert_eq!(offset_of!(ObjState, pMethods), 8);
+    assert_eq!(offset_of!(ObjState, pClass), 16);
+}
+
+#[test]
+fn test_string_offsets() {
+    assert_eq!(offset_of!(RingStringStruct, cStr), 0);
+    assert_eq!(offset_of!(RingStringStruct, nSize), 8);
+    assert_eq!(offset_of!(RingStringStruct, nCapacity), 12);
+    assert_eq!(offset_of!(RingStringStruct, cStrArray), 16);
+}
+
+#[test]
+fn test_bytecode_offsets() {
+    assert_eq!(offset_of!(ByteCode, aReg), 8);
 }
 
 #[test]
@@ -139,7 +232,7 @@ fn test_stack_size_constant() {
 
 #[test]
 fn test_custommutex_count() {
-    assert_eq!(crate::ffi::RING_VM_CUSTOMMUTEX_COUNT, 5);
+    assert_eq!(crate::ffi::RING_VM_CUSTOMMUTEX_COUNT, 6);
 }
 
 #[test]
@@ -1729,8 +1822,8 @@ fn test_output_constants() {
 
 #[test]
 fn test_var_constants() {
-    assert_eq!(crate::RING_VARVALUE_INT, 1);
-    assert_eq!(crate::RING_VARVALUE_FLOAT, 2);
+    assert_eq!(crate::RING_VARVALUE_INT, 3);
+    assert_eq!(crate::RING_VARVALUE_FLOAT, 7);
     assert_eq!(crate::RING_VAR_NAME, 1);
     assert_eq!(crate::RING_VAR_TYPE, 2);
     assert_eq!(crate::RING_VAR_VALUE, 3);

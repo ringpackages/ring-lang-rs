@@ -11,7 +11,7 @@ pub type RingCFunction = *mut CFunction;
 
 pub const RING_VM_STACK_SIZE: usize = 1004;
 pub const RING_VM_BC_ITEMS_COUNT: usize = 2;
-pub const RING_VM_CUSTOMMUTEX_COUNT: usize = 5;
+pub const RING_VM_CUSTOMMUTEX_COUNT: usize = 6;
 pub const RING_FALSE: c_int = 0;
 pub const RING_TRUE: c_int = 1;
 
@@ -157,6 +157,12 @@ pub struct String {
 }
 
 #[repr(C)]
+pub struct ListGCData {
+    pub pContainer: *mut c_void,
+    pub _opaque: [u8; 16],
+}
+
+#[repr(C)]
 pub struct List {
     pub pFirst: *mut c_void,
     pub pLast: *mut c_void,
@@ -169,7 +175,7 @@ pub struct List {
     pub nSize: c_uint,
     pub nIsHashMap: c_uchar,
     pub nHashSubList: c_uchar,
-    pub vGC: [u8; 24],
+    pub vGC: ListGCData,
 }
 
 #[repr(C)]
@@ -338,6 +344,11 @@ unsafe extern "C" {
     ) -> *mut c_void;
     pub fn ring_vm_api_varvalue(pPointer: *mut c_void, cStr: *const c_char, nType: c_int);
     pub fn ring_vm_api_intvalue(pPointer: *mut c_void, cStr: *const c_char);
+    pub fn ring_vm_api_shortintvalue(pPointer: *mut c_void, cStr: *const c_char);
+    pub fn ring_vm_api_unsignedshortintvalue(pPointer: *mut c_void, cStr: *const c_char);
+    pub fn ring_vm_api_unsignedintvalue(pPointer: *mut c_void, cStr: *const c_char);
+    pub fn ring_vm_api_longintvalue(pPointer: *mut c_void, cStr: *const c_char);
+    pub fn ring_vm_api_unsignedlongintvalue(pPointer: *mut c_void, cStr: *const c_char);
     pub fn ring_vm_api_floatvalue(pPointer: *mut c_void, cStr: *const c_char);
     pub fn ring_vm_api_ignorecpointertypecheck(pPointer: *mut c_void);
 
@@ -459,8 +470,8 @@ unsafe extern "C" {
     pub fn ring_state_runcode(pRingState: RingState, cStr: *const c_char);
     pub fn ring_state_findvar(pRingState: RingState, cStr: *const c_char) -> RingList;
     pub fn ring_state_newvar(pRingState: RingState, cStr: *const c_char) -> RingList;
-    pub fn ring_state_runfile(pRingState: RingState, cFileName: *const c_char) -> c_int;
-    pub fn ring_state_runstring(pRingState: RingState, cString: *const c_char) -> c_int;
+    pub fn ring_state_runfile(pRingState: RingState, cFileName: *mut c_char) -> c_int;
+    pub fn ring_state_runstring(pRingState: RingState, cString: *mut c_char) -> c_int;
 
     pub fn ring_state_malloc(pRingState: RingState, nSize: size_t) -> *mut c_void;
     pub fn ring_state_calloc(pRingState: RingState, nCount: size_t, nSize: size_t) -> *mut c_void;
