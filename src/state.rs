@@ -135,7 +135,7 @@ pub fn ring_state_exit(state: RingState, exit_code: c_int) {
 }
 
 #[inline]
-pub fn ring_state_runobjectfile(state: RingState, filename: &mut [u8]) {
+pub fn ring_state_runobjectfile(state: RingState, filename: &mut [u8]) -> c_int {
     unsafe { ffi::ring_state_runobjectfile(state, filename.as_mut_ptr() as *mut c_char) }
 }
 

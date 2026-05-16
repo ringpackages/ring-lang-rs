@@ -1,17 +1,17 @@
 use crate::ffi_types::{CString, c_char, c_int, c_uint, c_void};
 
-use crate::ffi::{self, ITEM_NUMBERFLAG_DOUBLE, ITEMTYPE_STRING, RING_FALSE, RingVM};
+use crate::ffi::{self, FuncCall, ITEM_NUMBERFLAG_DOUBLE, ITEMTYPE_STRING, RING_FALSE, RingVM};
 
 #[inline]
 pub fn ring_vm_callfunction(vm: RingVM, func_name: &[u8]) {
-    unsafe { ffi::ring_vm_callfunction(vm, func_name.as_ptr() as *const c_char) }
+    unsafe { ffi::ring_vm_callfunction(vm, func_name.as_ptr() as *mut c_char) }
 }
 
 #[inline]
 /// String variant of [`ring_vm_callfunction`].
 pub fn ring_vm_callfunction_str(vm: RingVM, func_name: &str) {
     if let Ok(cstr) = CString::new(func_name) {
-        unsafe { ffi::ring_vm_callfunction(vm, cstr.as_ptr()) }
+        unsafe { ffi::ring_vm_callfunction(vm, cstr.as_ptr() as *mut c_char) }
     }
 }
 
@@ -189,7 +189,7 @@ pub fn ring_vm_stringtonum_str(vm: RingVM, s: &str) -> f64 {
 }
 
 #[inline]
-pub fn ring_vm_aftercfunction(vm: RingVM, func_call: *mut c_void) {
+pub fn ring_vm_aftercfunction(vm: RingVM, func_call: *mut FuncCall) {
     unsafe { ffi::ring_vm_aftercfunction(vm, func_call) }
 }
 

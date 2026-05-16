@@ -291,7 +291,7 @@ unsafe extern "C" {
     pub fn ring_vm_api_isobject(pPointer: *mut c_void, nPara: c_int) -> c_int;
     pub fn ring_vm_api_iscpointerlist(pPointer: *mut c_void, pList: RingList) -> c_int;
 
-    pub fn ring_vm_api_getstring(pPointer: *mut c_void, nPara: c_int) -> *const c_char;
+    pub fn ring_vm_api_getstring(pPointer: *mut c_void, nPara: c_int) -> *mut c_char;
     pub fn ring_vm_api_getstringsize(pPointer: *mut c_void, nPara: c_int) -> c_uint;
     pub fn ring_vm_api_getstringraw(pPointer: *mut c_void) -> RingString;
     pub fn ring_vm_api_getnumber(pPointer: *mut c_void, nPara: c_int) -> c_double;
@@ -361,7 +361,7 @@ unsafe extern "C" {
         pList2: RingList,
     ) -> c_int;
 
-    pub fn ring_vm_error(pPointer: *mut c_void, cStr: *const c_char);
+    pub fn ring_vm_error(pVM: RingVM, cStr: *const c_char);
 
     pub fn ring_list_new(nSize: c_uint) -> RingList;
     pub fn ring_list_delete(pList: RingList) -> RingList;
@@ -535,7 +535,7 @@ unsafe extern "C" {
     // State utility functions
     pub fn ring_state_log(pRingState: RingState, cStr: *const c_char);
     pub fn ring_state_exit(pRingState: RingState, nExitCode: c_int);
-    pub fn ring_state_runobjectfile(pRingState: RingState, cFileName: *mut c_char);
+    pub fn ring_state_runobjectfile(pRingState: RingState, cFileName: *mut c_char) -> c_int;
     pub fn ring_state_runobjectstring(
         pRingState: RingState,
         cString: *mut c_char,
@@ -547,7 +547,7 @@ unsafe extern "C" {
     pub fn ring_state_runbytecode(pRingState: RingState);
 
     // VM callback function
-    pub fn ring_vm_callfunction(pVM: RingVM, cFuncName: *const c_char);
+    pub fn ring_vm_callfunction(pVM: RingVM, cFuncName: *mut c_char);
 
     // Threading/Mutex functions
     pub fn ring_vm_mutexlock(pVM: RingVM);
@@ -565,7 +565,7 @@ unsafe extern "C" {
     pub fn ring_vm_runcode(pVM: RingVM, cStr: *const c_char);
     pub fn ring_vm_numtostring(pVM: RingVM, nNum: c_double, cStr: *mut c_char) -> *mut c_char;
     pub fn ring_vm_stringtonum(pVM: RingVM, cStr: *const c_char) -> c_double;
-    pub fn ring_vm_aftercfunction(pVM: RingVM, pFuncCall: *mut c_void);
+    pub fn ring_vm_aftercfunction(pVM: RingVM, pFuncCall: *mut FuncCall);
     pub fn ring_vm_callfuncwithouteval(pVM: RingVM, cStr: *const c_char, lMethod: c_uint);
     pub fn ring_vm_showbytecode(pVM: RingVM);
     pub fn ring_vm_showerrormessage(pVM: RingVM, cStr: *const c_char);

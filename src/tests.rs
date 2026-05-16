@@ -1080,14 +1080,83 @@ fn test_ring_state_newvar_str() {
     assert!(!new_var.is_null());
 }
 
+// Generated from `echo 'x = 42' > /tmp/test_obj.ring && ring -go /tmp/test_obj.ring`
+const RING_OBJ: &[u8] = &[
+    0x23, 0x20, 0x52, 0x69, 0x6e, 0x67, 0x20, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x20, 0x46, 0x69,
+    0x6c, 0x65, 0x0a, 0x23, 0x20, 0x4f, 0x42, 0x4a, 0x45, 0x43, 0x54, 0x20, 0x31, 0x2e, 0x32, 0x35,
+    0x0a, 0x23, 0x20, 0x46, 0x69, 0x6c, 0x65, 0x73, 0x20, 0x4c, 0x69, 0x73, 0x74, 0x0a, 0x7b, 0x53,
+    0x31, 0x38, 0x21, 0x5d, 0x1d, 0x03, 0x17, 0x5c, 0x00, 0x17, 0x1a, 0x1a, 0x38, 0x1d, 0x0b, 0x04,
+    0x49, 0x01, 0x1d, 0x1c, 0x0e, 0x7d, 0x23, 0x20, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e,
+    0x73, 0x20, 0x4c, 0x69, 0x73, 0x74, 0x0a, 0x7b, 0x7d, 0x23, 0x20, 0x43, 0x6c, 0x61, 0x73, 0x73,
+    0x65, 0x73, 0x20, 0x4c, 0x69, 0x73, 0x74, 0x0a, 0x7b, 0x7d, 0x23, 0x20, 0x50, 0x61, 0x63, 0x6b,
+    0x61, 0x67, 0x65, 0x73, 0x20, 0x4c, 0x69, 0x73, 0x74, 0x0a, 0x7b, 0x7d, 0x23, 0x20, 0x50, 0x72,
+    0x6f, 0x67, 0x72, 0x61, 0x6d, 0x20, 0x43, 0x6f, 0x64, 0x65, 0x0a, 0x7b, 0x54, 0x49, 0x31, 0x36,
+    0x53, 0x31, 0x21, 0x0a, 0x45, 0x54, 0x49, 0x39, 0x33, 0x49, 0x30, 0x49, 0x34, 0x45, 0x54, 0x49,
+    0x32, 0x39, 0x44, 0x34, 0x32, 0x2e, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x45, 0x54, 0x49, 0x31,
+    0x37, 0x45, 0x54, 0x49, 0x36, 0x36, 0x45, 0x7d, 0x23, 0x20, 0x45, 0x6e, 0x64, 0x20, 0x6f, 0x66,
+    0x20, 0x46, 0x69, 0x6c, 0x65, 0x0a, 0x24, 0x21, 0x24, 0x7b, 0x24,
+];
+
 #[test]
-fn test_ring_state_runfile() {
+fn test_ring_state_runobjectfile_returns_int() {
     let state = crate::ring_state_init();
-    let path = std::env::temp_dir().join("test_ring_state_runfile.ring");
-    std::fs::write(&path, b"x = 1\n").unwrap();
-    let result = crate::ring_state_runfile(state, path.to_str().unwrap().as_bytes());
-    let _ = result;
+    let path = std::env::temp_dir().join("test_obj.ringo");
+    std::fs::write(&path, RING_OBJ).unwrap();
+    let mut filename = path.to_str().unwrap().as_bytes().to_vec();
+    let result = crate::ring_state_runobjectfile(state, &mut filename);
+    assert!(result == 1, "runobjectfile returned {}", result);
     let _ = std::fs::remove_file(&path);
+    crate::ring_state_delete(state);
+}
+
+#[test]
+fn test_ring_vm_aftercfunction_typed_ptr() {
+    let state = crate::ring_state_init();
+    let vm = unsafe { vm_from_state(state) };
+    unsafe {
+        let func_call_ptr =
+            &mut (*vm).aFuncCall[(*vm).nCurrentFuncCall as usize] as *mut crate::ffi::FuncCall;
+        let _ = func_call_ptr;
+    }
+    crate::ring_state_delete(state);
+}
+
+#[test]
+fn test_ring_api_error_with_vm_cast() {
+    let state = crate::ring_state_init();
+    crate::ring_register_function(state, b"retnum\0", retnum_impl);
+    crate::ring_state_runcode(state, b"x = retnum(42)\0");
+    crate::ring_state_delete(state);
+}
+
+extern "C" fn retnum_impl(p: *mut std::ffi::c_void) {
+    let n = crate::ring_api_getnumber(p, 1);
+    crate::ring_api_retnumber(p, n * 2.0);
+}
+
+#[test]
+fn test_ring_api_error_str_compiles() {
+    let state = crate::ring_state_init();
+    crate::ring_register_function(state, b"retnum2\0", retnum2_impl);
+    crate::ring_state_runcode(state, b"x = retnum2(7)\0");
+    crate::ring_state_delete(state);
+}
+
+extern "C" fn retnum2_impl(p: *mut std::ffi::c_void) {
+    crate::ring_api_retnumber(p, 99.0);
+}
+
+#[test]
+fn test_ring_api_getstring_mut_return() {
+    let state = crate::ring_state_init();
+    crate::ring_register_function(state, b"test_getstr\0", test_getstr_impl);
+    crate::ring_state_runcode(state, b"test_getstr(\"hello world\")\0");
+    crate::ring_state_delete(state);
+}
+
+extern "C" fn test_getstr_impl(p: *mut std::ffi::c_void) {
+    let s = crate::ring_api_getstring_str(p, 1);
+    assert_eq!(s, "hello world");
 }
 
 #[test]
@@ -1974,7 +2043,7 @@ verify_fn_sig!(
 verify_fn_sig!(
     test_vm_sig_aftercfunction,
     crate::vm::ring_vm_aftercfunction,
-    fn(crate::RingVM, *mut std::ffi::c_void)
+    fn(crate::RingVM, *mut crate::ffi::FuncCall)
 );
 verify_fn_sig!(
     test_vm_sig_callfuncwithouteval,

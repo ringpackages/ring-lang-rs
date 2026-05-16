@@ -1,6 +1,6 @@
 use crate::ffi_types::{CStr, CString, c_char, c_double, c_int, c_uint, c_void};
 
-use crate::ffi::{self, RingString};
+use crate::ffi::{self, RingString, RingVM};
 use crate::{
     RING_CPOINTER_STATUS, RING_CPOINTERSTATUS_NOTASSIGNED, RING_OUTPUT_RETLISTBYREF,
     RING_OUTPUT_RETNEWREF, RingFunc, RingList, RingState,
@@ -346,13 +346,13 @@ pub fn ring_api_cpointercmp(p: *mut c_void, list1: RingList, list2: RingList) ->
 
 #[inline]
 pub fn ring_api_error(p: *mut c_void, s: &[u8]) {
-    unsafe { ffi::ring_vm_error(p, s.as_ptr() as *const c_char) }
+    unsafe { ffi::ring_vm_error(p as RingVM, s.as_ptr() as *const c_char) }
 }
 
 #[inline]
 pub fn ring_api_error_str(p: *mut c_void, s: &str) {
     if let Ok(cstr) = CString::new(s) {
-        unsafe { ffi::ring_vm_error(p, cstr.as_ptr()) }
+        unsafe { ffi::ring_vm_error(p as RingVM, cstr.as_ptr()) }
     }
 }
 
